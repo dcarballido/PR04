@@ -145,7 +145,6 @@ public class recursosController {
     }
     
     
-    
     @RequestMapping(value="insertar_producto",method=RequestMethod.GET)
     public String insertProductoController(Model model){
         Producte producte=new Producte();
