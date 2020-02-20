@@ -5,6 +5,7 @@
  */
 package controller;
 
+import java.util.ArrayList;
 import javax.servlet.http.HttpServletRequest;
 import javax.swing.JOptionPane;
 import model.Producte;
@@ -12,18 +13,27 @@ import model.Usuarios;
 import model.UsuariosDAO;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.support.SessionStatus;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  *
  * @author aaron
  */
 @Controller
+@RequestMapping("/")
+@SessionAttributes({"nombreLogin"})
 public class recursosController {
+    String nombreSesion;
+    ArrayList<Usuarios> milista = new ArrayList<>();
+    ArrayList<Producte> milista_producte = new ArrayList<>();
     
     UsuariosDAO usuariosdao=new UsuariosDAO();
     
@@ -40,18 +50,38 @@ public class recursosController {
         
     }
     
-    @RequestMapping(value="login",method=RequestMethod.POST)
-    public String loginPOSTController(Model model){
-        Usuarios usuarios=new Usuarios();
-        return "redirect: tabla";
-    }
-    
-    @RequestMapping(value="tabla",method=RequestMethod.GET)
-    public String tablaController(Model model){
-        Usuarios usuarios=new Usuarios();
-        model.addAttribute("usuarios", usuarios);
-        return "tabla";
+  @RequestMapping(value="logout",method=RequestMethod.GET)
+    public RedirectView loginController(SessionStatus close){
+        nombreSesion=null;
+        close.setComplete();
+        RedirectView rv = new RedirectView("login");
+        return rv;
         
+    }
+
+    @RequestMapping(value="login", method=RequestMethod.POST) //asocio urls a metodos y asocio metodos a jsp.
+    public String loginController(@ModelAttribute("usuarios") Usuarios usuarios , BindingResult result, Model model){ //EL bindingResult no puede ir al final de todo cuando está el model, pq es el model el que tiene que ir al final del todo. /@Valid @ModelAttribute("persona") Persona "con esto consigues decir que lo que recuperas es de tipo Persona"
+      //El BindingResult sirve para que funcione la validación en el servidor.
+      String redirectUrl="login";  
+      if(result.hasErrors()){
+          
+      }else{
+            
+            for (int i = 0; i <=milista.size() -1; i++) {
+             
+         
+         if (usuarios.getCorreo_usuario().equals(this.milista.get(i).getCorreo_usuario()) && usuarios.getPassword_usuario().equals(this.milista.get(i).getPassword_usuario())) {
+             //JOptionPane.showMessageDialog(null,"Bien" );
+             this.nombreSesion=usuarios.getCorreo_usuario();
+             redirectUrl="tabla"; 
+             break;
+         }else{
+            JOptionPane.showMessageDialog(null,"No se a encontrado el usuario" );
+            break;
+         }
+         } 
+    } 
+      return "redirect:" + redirectUrl; //esto lo envia al index del controller, no a una jsp.
     }
     
     @RequestMapping(value="insertar",method=RequestMethod.GET)
